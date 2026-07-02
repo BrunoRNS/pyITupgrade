@@ -1,9 +1,0 @@
-[objects]
-music.obj
-res/soundbank.obj
-data.obj
-hdr.obj
-/save/t/pvsneslib/pvsneslib/lib/LoROM_SlowROM/crt0_snes.obj
-/save/t/pvsneslib/pvsneslib/lib/LoROM_SlowROM/libc.obj
-/save/t/pvsneslib/pvsneslib/lib/LoROM_SlowROM/libm.obj
-/save/t/pvsneslib/pvsneslib/lib/LoROM_SlowROM/libtcc.obj

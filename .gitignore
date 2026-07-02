@@ -1,0 +1,13 @@
+temp/
+__pycache__/
+*.sym
+*.as
+*.inc
+*.o
+*.obj
+*.pal
+*.pic
+*linkfile*
+*.bnk
+res/
+*.sfc
