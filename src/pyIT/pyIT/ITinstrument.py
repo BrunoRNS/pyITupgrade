@@ -1,3 +1,6 @@
+import io
+from typing import Any, List, Tuple
+
 from .ITpan_envelope import ITpan_envelope
 from .ITvol_envelope import ITvol_envelope
 from .ITpitch_envelope import ITpitch_envelope
@@ -5,8 +8,15 @@ from .ITpitch_envelope import ITpitch_envelope
 import struct
 
 class ITinstrument(object):
+    """Represent an IT instrument definition and its associated envelopes.
+
+    An instrument contains metadata, sample mapping information, and the
+    volume, pan, and pitch envelope data that shape playback behavior.
+    """
+
     def __init__(self):
-        self.Filename = b''  # Python 3: Inicializado como bytes
+        """Initialize an instrument with default IT-compatible values."""
+        self.Filename = b''
         self.NNA = 0
         self.DCT = 0
         self.DCA = 0
@@ -17,8 +27,8 @@ class ITinstrument(object):
         self.DfP = 128
         self.RV = 0
         self.RP = 0
-        # TrkVers e NoS são ignorados (usados apenas em arquivos de instrumento)
-        self.InstName = b''  # Python 3: Inicializado como bytes
+        
+        self.InstName = b''
         self.IFC = 0
         self.IFR = 0
         self.MCh = 0
@@ -31,18 +41,24 @@ class ITinstrument(object):
         self.panEnv = ITpan_envelope()
         self.pitchEnv = ITpitch_envelope()
     
-    def write(self, outf):
-        # Garante que as strings sejam tratadas como bytes antes de empacotar
-        filename = self.Filename if isinstance(self.Filename, bytes) else self.Filename.encode('ascii', errors='ignore')
-        inst_name = self.InstName if isinstance(self.InstName, bytes) else self.InstName.encode('ascii', errors='ignore')
+    def write(self, outf: io.BufferedWriter):
+        """Serialize the instrument to a binary writer.
 
-        outf.write(struct.pack('<4s12s', b'IMPI', filename)) # Python 3: b'IMPI'
+        Args:
+            outf: Buffered writer used to emit the instrument bytes.
+        """
+        
+        filename = self.Filename if isinstance(self.Filename, bytes) else self.Filename.encode('ascii', errors='ignore')
+        inst_name = self.InstName if isinstance(self.InstName, bytes) else self.InstName.encode('ascii', errors='ignore') # pyright: ignore[reportUnnecessaryIsInstance] # py
+
+        outf.write(struct.pack('<4s12s', b'IMPI', filename))
         outf.write(struct.pack('<BBBB', 0, self.NNA, self.DCT, self.DCA))
         outf.write(struct.pack('<HBB', self.FadeOut, self.PPS, self.PPC))
         outf.write(struct.pack('<BBBB', self.GbV, self.DfP, self.RV, self.RP))
-        outf.write(struct.pack('<HBB', 0xadde, 0xbe, 0xef)) # dados não utilizados
-        outf.write(struct.pack('<26s', inst_name[:25] + b'\0')) # Python 3: b'\0'
+        outf.write(struct.pack('<HBB', 0xadde, 0xbe, 0xef))
+        outf.write(struct.pack('<26s', inst_name[:25] + b'\0'))
         outf.write(struct.pack('<BBBBH', self.IFC, self.IFR, self.MCh, self.MPr, self.MIDIBank))
+        
         for smp in self.SampleTable:
             outf.write(struct.pack('<BB', smp[0], smp[1]))
         
@@ -50,25 +66,29 @@ class ITinstrument(object):
         self.panEnv.write(outf)
         self.pitchEnv.write(outf)
         
-        outf.write(b'FOOB') # Python 3: b'FOOB'
+        outf.write(b'FOOB')
     
-    def load(self, inf):
-        """inf deve estar posicionado na posição do instrumento a ser lido"""
+    def load(self, inf: io.BufferedReader) -> None:
+        """Deserialize an instrument from a binary reader.
+
+        Args:
+            inf: Buffered reader containing the serialized instrument data.
+        """
+        
         (IMPI, self.Filename) = struct.unpack('<4s12s', inf.read(16))
-        assert(IMPI == b'IMPI') # Python 3: Comparação com bytes b'IMPI'
+        assert(IMPI == b'IMPI')
         
-        (zero, self.NNA, self.DCT, self.DCA, self.FadeOut, self.PPS, self.PPC, 
-         self.GbV, self.DfP, self.RV, self.RP, discard, discard,
-         discard) = struct.unpack('<BBBBHBBBBBBHBB', inf.read(16))
+        (_, self.NNA, self.DCT, self.DCA, self.FadeOut, self.PPS, self.PPC, # pyright: ignore[reportConstantRedefinition]
+         self.GbV, self.DfP, self.RV, self.RP, _, _, # pyright: ignore[reportConstantRedefinition]
+         _) = struct.unpack('<BBBBHBBBBBBHBB', inf.read(16))
         
-        # Correção da substituição de caracteres nulos em modo binário
         self.InstName = inf.read(26).replace(b'\0', b' ')[:25]
         
-        (self.IFC, self.IFR, self.MCh, self.MPr,
+        (self.IFC, self.IFR, self.MCh, self.MPr, # pyright: ignore[reportConstantRedefinition]
          self.MIDIBank) = struct.unpack('<BBBBH', inf.read(6))
         
-        self.SampleTable = []
-        for i in range(120): # Python 3: range() no lugar de xrange()
+        self.SampleTable: List[List[int|Tuple[Any, ...]]] = []
+        for _ in range(120):
             self.SampleTable.append(list(struct.unpack('<BB', inf.read(2))))
         
         self.volEnv = ITvol_envelope()
@@ -79,7 +99,9 @@ class ITinstrument(object):
         self.panEnv.load(inf)
         self.pitchEnv.load(inf)
         
-        inf.read(4) # leitura dummy
+        inf.read(4)
         
-    def __len__(self):
+    def __len__(self) -> int:
+        """Return the serialized size of the instrument in bytes."""
         return 554
+    

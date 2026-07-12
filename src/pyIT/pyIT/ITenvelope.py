@@ -1,8 +1,18 @@
+import io
 import struct
+from typing import List
 from .ITenvelope_node import ITenvelope_node
 
 class ITenvelope(object):
+    """Represents the structure of an IT instrument envelope.
+
+    The envelope stores activation flags, control points, and the loop and
+    sustain boundaries used to describe how volume, pitch, or another
+    parameter evolves over time.
+    """
+
     def __init__(self):
+        """Initialize the envelope with default IT state values."""
         self.IsOn = False
         self.LoopOn = False
         self.SusloopOn = False
@@ -12,14 +22,23 @@ class ITenvelope(object):
         self.SLB = 0
         self.SLE = 0
         
-        # O self.Nodes list conterá o número de node points fixos em 25
         self.numNodePoints = 0
-        self.Nodes = [ITenvelope_node() for i in range(25)] # Python 3: range() no lugar de xrange()
+        self.Nodes: List[ITenvelope_node] = [ITenvelope_node() for _ in range(25)]
 
-    def extraFlags(self):
+    def extraFlags(self) -> int:
+        """Return any additional envelope flags.
+
+        Returns:
+            An integer containing extra flag bits for derived classes.
+        """
         return 0
                 
-    def write(self, outf):
+    def write(self, outf: io.BufferedWriter):
+        """Serialize the envelope to a binary writer.
+
+        Args:
+            outf: Buffered writer used to emit the envelope bytes.
+        """
         flags = 0
         flags = flags | ((self.IsOn) << 0)
         flags = flags | ((self.LoopOn) << 1)
@@ -32,26 +51,38 @@ class ITenvelope(object):
         for node in self.Nodes:
             outf.write(struct.pack('<bH', node.y_val, node.tick))
         
-        outf.write(b'\0') # Python 3: b'\0' indica string de bytes pura
+        outf.write(b'\0')
     
-    def load(self, inf):
-        (flags, self.numNodePoints, self.LpB, self.LpE, self.SLB,
-         self.SLE) = struct.unpack('<BBBBBB', inf.read(6))
+    def load(self, inf: io.BufferedReader):
+        """Load the envelope data from a binary reader.
+
+        Args:
+            inf: Buffered reader containing the serialized envelope data.
+        """
+        (flags, self.numNodePoints, self.LpB, self.LpE, self.SLB, # pyright: ignore[reportConstantRedefinition]
+         self.SLE) = struct.unpack('<BBBBBB', inf.read(6)) # pyright: ignore[reportConstantRedefinition]
         
         self.setFlags(flags)
         
-        self.Nodes = []
+        self.Nodes: List[ITenvelope_node] = []
         
-        for i in range(25): # Python 3: range() no lugar de xrange()
+        for _ in range(25):
             node = ITenvelope_node()
             self.Nodes.append(node)
             (node.y_val, node.tick) = struct.unpack('<bH', inf.read(3))
         inf.read(1)
         
-    def setFlags(self, flags):
+    def setFlags(self, flags: int):
+        """Apply the packed flag bits to the envelope state.
+
+        Args:
+            flags: Integer containing the encoded envelope flags.
+        """
         self.IsOn = bool(flags & 0x01)
         self.LoopOn = bool(flags & 0x02)
         self.SusloopOn = bool(flags & 0x04)
         
     def __len__(self):
+        """Return the serialized size of the envelope in bytes."""
         return 82
+    

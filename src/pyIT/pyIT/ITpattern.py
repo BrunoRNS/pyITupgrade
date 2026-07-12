@@ -1,3 +1,5 @@
+from typing import List
+
 from .ITnote import ITnote
 
 import io
@@ -5,63 +7,84 @@ import struct
 import logging
 
 class ITpattern(object):
-    def __init__(self):
-        # Preenche o padrão com instâncias vazias de ITnote.
-        # self.Rows[4][2] retornará a nota no terceiro canal da quinta linha.
-        self.Rows = [[ITnote() for i in range(64)] for j in range(64)] # Python 3: range()
+    """Represent a pattern of note events in an IT module.
 
-    def __len__(self):
+    A pattern contains 64 channels and 64 rows by default, and each cell may
+    hold a note event with instrument, volume, and effect data.
+    """
+
+    Rows: List[List[ITnote]]
+
+    def __init__(self) -> None:
+        """Initialize a pattern with an empty 64x64 grid of note cells."""
+        self.Rows = [[ITnote() for _ in range(64)] for _ in range(64)]
+
+    def __len__(self) -> int:
+        """Return the serialized size of the pattern in bytes."""
         return len(self.pack()) + 8
-    
-    def __eq__(self, other):
-        return self.Rows == other.Rows
-    
-    def __ne__(self, other):
-        return not (self == other)
-    
-    def isEmpty(self):
-        """ 'empty' aqui usa a definição do IT de um padrão de 64 linhas sem dados de notas. """
-        return self == ITpattern()
+
+    def __eq__(self, other: object) -> bool:
         
-    def write(self, outf):
+        if isinstance(other, ITpattern):
+            return self.Rows == other.Rows
+        
+        else: return False
+    
+    def __ne__(self, other: object) -> bool:
+        """Return the inverse of :meth:`__eq__`."""
+        return not (self == other)
+
+    def isEmpty(self) -> bool:
+        """Return whether the pattern is empty.
+
+        Returns:
+            ``True`` when the pattern contains no populated note events.
+        """
+        return self == ITpattern()
+
+    def write(self, outf: io.BufferedWriter) -> None:
         ptndata = self.pack()
-        outf.write(struct.pack('<HH4s', len(ptndata), len(self.Rows), b'\0'*4)) # Python 3: b'\0'*4
+        outf.write(struct.pack('<HH4s', len(ptndata), len(self.Rows), b'\0'*4))
         outf.write(ptndata)
     
-    def unpack(self, rows, ptndata):
+    def unpack(self, rows: int, ptndata: bytes) -> None:
+        """Deserialize pattern data into the current row grid.
+
+        Args:
+            rows: Number of rows to allocate for the pattern.
+            ptndata: Serialized pattern payload bytes.
         """
-        Desempacota os dados brutos do padrão armazenados em ptndata.
-        """
+        
         log = logging.getLogger("pyIT.ITpattern.unpack")
         log.info("load pattern: rows = %d, len = %d" % (rows, len(ptndata),))
         
-        ptn_reader = io.BytesIO(ptndata) # Python 3: Alterado StringIO -> io.BytesIO
-        masks = [0] * 64 # Prepara variáveis de máscara
-        last_note = [ITnote() for i in range(64)] # Python 3: range()
+        ptn_reader = io.BytesIO(ptndata)
+        masks: List[int] = [0] * 64
         
-        # Reseta os dados das linhas
-        self.Rows = [[ITnote() for i in range(64)] for j in range(rows)] # Python 3: range()
+        last_note = [ITnote() for _ in range(64)]
+
+        self.Rows = [[ITnote() for _ in range(64)] for _ in range(rows)]
         
         row_num = 0
         
         while True:
             chan_data = ptn_reader.read(1)
             
-            if chan_data == b'': # Python 3: Fim dos dados em bytes
+            if chan_data == b'':
                 break
             
             chan_data = struct.unpack('<B', chan_data)[0]
             
-            if chan_data == 0: # Fim da linha
+            if chan_data == 0:
                 row_num = row_num + 1
                 continue
             
-            chan_num = (chan_data - 1) & 63 # Obtém o número do canal para estes dados
+            chan_num: int = (chan_data - 1) & 63
             
-            if chan_data & 128: # Novo valor para a variável de máscara deste canal
+            if chan_data & 128:
                 masks[chan_num] = struct.unpack('<B', ptn_reader.read(1))[0]
             
-            mask = masks[chan_num]
+            mask: int = masks[chan_num]
             if mask & 1:
                 self.Rows[row_num][chan_num].Note = struct.unpack('<B', ptn_reader.read(1))[0]
                 last_note[chan_num].Note = self.Rows[row_num][chan_num].Note
@@ -86,25 +109,26 @@ class ITpattern(object):
                 self.Rows[row_num][chan_num].Effect = last_note[chan_num].Effect
                 self.Rows[row_num][chan_num].EffectArg = last_note[chan_num].EffectArg
                 
-    def pack(self):
-        """
-        Empacota os dados do padrão de volta e os retorna como uma string de bytes brutos.
-        """
-        log = logging.getLogger("pyIT.ITpattern.unpack")
+    def pack(self) -> bytes:
+        """Serialize the pattern into the IT packed pattern format.
 
-        ptn_writer = io.BytesIO() # Python 3: Alterado StringIO -> io.BytesIO
+        Returns:
+            The packed pattern bytes.
+        """
+
+        ptn_writer = io.BytesIO()
         masks = [0] * 64 
-        last_note = [ITnote() for i in range(64)] # Python 3: range()
+        last_note = [ITnote() for _ in range(64)]
         empty_note = ITnote()
         
         for row_data in self.Rows:
-            for chan_num in range(64): # Python 3: range()
+            for chan_num in range(64):
                 note = row_data[chan_num]
                 if note == empty_note:
                     continue
                 
                 mask = 0
-                packed_note = io.BytesIO() # Python 3: Alterado StringIO -> io.BytesIO
+                packed_note = io.BytesIO()
                 
                 if note.Note is not None:
                     if note.Note == last_note[chan_num].Note:
@@ -146,8 +170,7 @@ class ITpattern(object):
                         packed_note.write(struct.pack('<BB',
                                                       write_effect,
                                                       write_effectarg))
-                
-                # Verifica se reutilizaremos a última máscara
+
                 if mask == masks[chan_num]:
                     ptn_writer.write(struct.pack('<B', (chan_num + 1)))
                 else:
@@ -157,14 +180,18 @@ class ITpattern(object):
                     masks[chan_num] = mask
                 ptn_writer.write(packed_note.getvalue())
                 
-            # Escreve o marcador de fim de linha
-            ptn_writer.write(b"\x00") # Python 3: Literal de bytes b"\x00"
+            ptn_writer.write(b"\x00")
         
         return ptn_writer.getvalue()
         
-    def load(self, inf):
-        """Carrega os dados do padrão IT a partir de inf. inf já deve estar posicionado."""
-        (ptnlen, rows, discard) = struct.unpack('<HH4s', inf.read(8))
+    def load(self, inf: io.BufferedReader) -> None:
+        """Load a pattern from a binary reader.
+
+        Args:
+            inf: Buffered reader containing the serialized pattern data.
+        """
+        
+        (ptnlen, rows, _) = struct.unpack('<HH4s', inf.read(8))
         ptndata = inf.read(ptnlen)
         
         self.unpack(rows, ptndata)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
  * Schism Tracker - a cross-platform Impulse Tracker clone
  * copyright (c) 2003-2005 Storlek <storlek@rigelseven.com>
@@ -22,23 +21,26 @@
 """
 
 import logging
+from typing import BinaryIO, Optional
+
 
 class ReadBitsState:
-    def __init__(self):
-        self.bitbuf = 0
-        self.bitnum = 0
+    def __init__(self) -> None:
+        self.bitbuf: int = 0
+        self.bitnum: int = 0
 
-def MIN(a, b):
+
+def MIN(a: int, b: int) -> int:
     return a if a < b else b
 
-def it_readbits(n, state, stream):
+
+def it_readbits(n: int, state: ReadBitsState, stream: BinaryIO) -> int:
     value = 0
     i = n
     
     while i:
         i -= 1
         if not state.bitnum:
-            # Python 3: ler de um arquivo binário já retorna um int, ord() causaria TypeError
             byte_read = stream.read(1)
             if not byte_read:
                 state.bitbuf = 0
@@ -53,19 +55,23 @@ def it_readbits(n, state, stream):
 
     return (value & 0xffffffff) >> (32 - n)
 
-def signbyte(b):
+def signbyte(b: int) -> int:
     return b - 256 if b > 127 else b
 
-def unsignbyte(b):
+
+def unsignbyte(b: int) -> int:
     return b & 0xff
 
-def signword(w):
+
+def signword(w: int) -> int:
     return w - 65536 if w > 32767 else w
 
-def unsignword(w):
+
+def unsignword(w: int) -> int:
     return w & 0xffff
 
-def it_decompress8(dest, length, srcbuf, it215):
+
+def it_decompress8(dest: BinaryIO, length: int, srcbuf: BinaryIO, it215: bool) -> Optional[int]:
     """
     dest: (file-like object) output buffer for decompressed data
     length: number of samples (renomeado de 'len' para evitar shadowing)
@@ -121,7 +127,6 @@ def it_decompress8(dest, length, srcbuf, it215):
             d1 = (d1 + v) & 0xff
             d2 = (d2 + d1) & 0xff
             
-            # Python 3: Gravação binária exige o tipo bytes() em vez de chr()
             out_byte = d2 if it215 else d1
             dest.write(bytes([out_byte]))
             blkpos += 1
@@ -132,7 +137,7 @@ def it_decompress8(dest, length, srcbuf, it215):
     return compressed_len
 
 
-def it_decompress16(dest, length, srcbuf, it215):
+def it_decompress16(dest: BinaryIO, length: int, srcbuf: BinaryIO, it215: bool) -> Optional[int]:
     """
     dest: (file-like object) output buffer for decompressed data
     length: number of samples (renomeado de 'len' para evitar shadowing)
@@ -185,7 +190,6 @@ def it_decompress16(dest, length, srcbuf, it215):
             d1 = (d1 + v) & 0xffff
             d2 = (d2 + d1) & 0xffff
             
-            # Python 3: Gravação binária dividida em 2 bytes usando tipos numéricos puros
             outval = d2 if it215 else d1
             dest.write(bytes([outval & 0xff]))
             dest.write(bytes([unsignbyte(outval >> 8)]))
@@ -195,3 +199,4 @@ def it_decompress16(dest, length, srcbuf, it215):
 
     compressed_len = srcbuf.tell() - startpos
     return compressed_len
+

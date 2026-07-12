@@ -1,73 +1,106 @@
 # -*- coding: utf-8 -*-
-# Importa a classe ITpattern de dentro do módulo ITpattern
+"""Helpers for constructing IT patterns from simple note sequences."""
+
+from typing import Optional, Sequence
+
 from .ITpattern import ITpattern
 
+
 class PatternBuilder:
-    def __init__(self, bpm=180, linhas_por_nota=4):
-        """
-        :param bpm: Batidas por minuto (IT).
-        :param linhas_por_nota: Quantas linhas do Tracker cada nota vai ocupar.
+    """Build IT patterns from a sequence of note names."""
+
+    def __init__(self, bpm: int = 180, lines_per_note: int = 4) -> None:
+        """Initialize the builder with tempo and spacing settings.
+
+        Args:
+            bpm: Beats per minute value stored on the builder instance.
+            lines_per_note: Number of pattern rows reserved for each note event.
         """
         self.bpm = bpm
-        self.linhas_por_nota = linhas_por_nota
+        self.lines_per_note = lines_per_note
 
-        # Dicionário base de semitons para calcular qualquer oitava dinamicamente
-        self._semitons = {
-            'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5,
-            'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11
+        self._semitones = {
+            "C": 0,
+            "C#": 1,
+            "D": 2,
+            "D#": 3,
+            "E": 4,
+            "F": 5,
+            "F#": 6,
+            "G": 7,
+            "G#": 8,
+            "A": 9,
+            "A#": 10,
+            "B": 11,
         }
 
-    def string_para_numero(self, nome_nota):
-        if not nome_nota:
+    def note_name_to_number(self, note_name: Optional[str]) -> Optional[int]:
+        """Convert a note name into an IT-compatible note number.
+
+        Args:
+            note_name: A note such as ``C4``, ``F#5``, or ``DO``.
+
+        Returns:
+            The corresponding IT note number, or ``None`` if no note was given.
+            Invalid values fall back to ``C-5`` (60).
+        """
+        if not note_name:
             return None
-            
-        # Normaliza o formato (ex: transforma "mi" em "E-5", "c-5" em "C-5", "C#5" em "C#5")
-        nota_limpa = nome_nota.upper().replace('-', '')
-        
-        # Atalhos comuns em português para facilitar sua escrita
-        atalhos = {'DO': 'C5', 'RE': 'D5', 'MI': 'E5', 'FA': 'F5', 'SOL': 'G5', 'LA': 'A5', 'SI': 'B5'}
-        if nota_limpa in atalhos:
-            nota_limpa = atalhos[nota_limpa]
+
+        clean_note = note_name.upper().replace("-", "")
+
+        aliases = {
+            "DO": "C5",
+            "RE": "D5",
+            "MI": "E5",
+            "FA": "F5",
+            "SOL": "G5",
+            "LA": "A5",
+            "SI": "B5",
+        }
+        if clean_note in aliases:
+            clean_note = aliases[clean_note]
 
         try:
-            # Separa o tom (letras) da oitava (número no final)
-            if '#' in nota_limpa:
-                tom = nota_limpa[:2]
-                oitava = int(nota_limpa[2:])
+            if "#" in clean_note:
+                pitch = clean_note[:2]
+                octave = int(clean_note[2:])
             else:
-                tom = nota_limpa[0]
-                oitava = int(nota_limpa[1:])
-                
-            # O cálculo matemático padrão do formato Impulse Tracker:
-            # Oitava * 12 + o semitom correspondente
-            return (oitava * 12) + self._semitons[tom]
+                pitch = clean_note[0]
+                octave = int(clean_note[1:])
+
+            return (octave * 12) + self._semitones[pitch]
+        
         except (KeyError, ValueError):
-            # Se a nota for completamente inválida, retorna o C-5 (60)
             return 60
 
-    def build_pattern(self, sequencia_notas, id_instrumento=1):
-        """
-        Gera um ITpattern a partir de uma lista contendo notas em string e Nones.
-        """
-        # Correção crucial: Agora instancia a CLASSE importada corretamente
-        padrao = ITpattern()
-        linha_atual = 0
+    def build_pattern(
+        self, note_sequence: Sequence[Optional[str]], instrument_id: int = 1
+    ) -> ITpattern:
+        """Create an IT pattern from a sequence of note names.
 
-        for item in sequencia_notas:
-            if linha_atual >= 64:
-                print(f"[Aviso] A sequência de notas ultrapassou o limite de 64 linhas do Pattern e foi cortada.")
+        Args:
+            note_sequence: Iterable of note names. ``None`` values produce empty rows.
+            instrument_id: Instrument number assigned to populated note cells.
+
+        Returns:
+            An ``ITpattern`` instance with notes placed on channel 0.
+        """
+        pattern = ITpattern()
+        current_line = 0
+
+        for note in note_sequence:
+            if current_line >= 64:
+                print("[Warning] The note sequence exceeded the 64-line pattern limit and was truncated.")
                 break
 
-            if item is not None:
-                num_nota = self.string_para_numero(item)
-                
-                # Acessa a célula do Canal 0 na linha atual
-                nota_it = padrao.Rows[linha_atual][0]
-                nota_it.Note = num_nota
-                nota_it.Instrument = id_instrumento
-                nota_it.Volume = 64  # Volume cheio
+            if note is not None:
+                note_number = self.note_name_to_number(note)
+                note_cell = pattern.Rows[current_line][0]
+                note_cell.Note = note_number
+                note_cell.Instrument = instrument_id
+                note_cell.Volume = 64
 
-            # Avança o ponteiro de linhas para a próxima nota
-            linha_atual += self.linhas_por_nota
+            current_line += self.lines_per_note
 
-        return padrao
+        return pattern

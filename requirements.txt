@@ -1,3 +1,6 @@
 numpy
 scipy
+scipy-stubs
 flit
+pytest
+pydub

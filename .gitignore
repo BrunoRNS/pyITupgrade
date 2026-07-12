@@ -13,3 +13,4 @@ res/
 *.sfc
 .vscode/
 venv/
+.venv/

@@ -5,8 +5,16 @@ import logging
 import traceback
 
 class ITsample(object):
-    def __init__(self):
-        self.Filename = b''  # Python 3: bytes
+    """Represent a sample entry in an IT module.
+
+    An IT sample contains playback metadata, loop information, and the raw
+    sample payload used by the module. It can also track compressed sample
+    data and serialization state.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the sample with default IT-compatible values."""
+        self.Filename = b''
         self.GvL = 64
         
         self.IsSample = False
@@ -19,13 +27,11 @@ class ITsample(object):
         self.IsPingPongSusLoop = False
         
         self.Vol = 64
-        self.SampleName = b''  # Python 3: bytes
+        self.SampleName = b''
         self.Cvt = 0x01
         self.DfP = 0x00
         
-        # O comprimento é determinado pelos dados do sample
-        # Nota: comprimentos e índices de loop são em SAMPLES, não BYTES
-        
+
         self.LoopBegin = 0
         self.LoopEnd = 0
         self.C5Speed = 8363
@@ -36,13 +42,15 @@ class ITsample(object):
         self.ViT = 0
         self.ViR = 0
         
-        self.SampleData = b''  # Python 3: bytes
+        self.SampleData = b''
         self.CompressedSampleData = None
         self._original_sample_data = self.SampleData
     
-    def sampleDataLen(self):
-        """
-        Retorna o comprimento dos dados do sample em SAMPLES.
+    def sampleDataLen(self) -> int:
+        """Return the logical sample length in samples.
+
+        Returns:
+            The number of audio samples represented by the stored payload.
         """
         divider = 1
         if self.Is16bit:
@@ -50,11 +58,15 @@ class ITsample(object):
         if self.IsStereo:
             divider = divider * 2
             
-        return len(self.SampleData) // divider  # Python 3: força divisão inteira
+        return len(self.SampleData) // divider
     
-    def rawSampleData(self):
-        """
-        Retorna os dados brutos do sample.
+    
+    def rawSampleData(self) -> bytes:
+        """Return the active payload bytes for serialization.
+
+        Returns:
+            The compressed payload when compression is active, otherwise the
+            stored uncompressed sample data.
         """
         self._check_compression_status()
         
@@ -63,12 +75,18 @@ class ITsample(object):
         else:
             return self.SampleData
     
-    def _check_compression_status(self):
+    def _check_compression_status(self) -> None:
+        """Invalidate compression state if the sample data has changed."""
         if self.IsCompressed and self.modified():
             self.IsCompressed = False
         
-    def write(self, outf, sample_offset):
-        log = logging.getLogger('pyIT.ITsample.save')
+    def write(self, outf: io.BufferedWriter, sample_offset: int) -> None:
+        """Serialize the sample metadata and payload to a binary writer.
+
+        Args:
+            outf: Buffered writer used to emit the sample bytes.
+            sample_offset: Offset of the sample data in the output file.
+        """
         
         if not self.IsSample:
             self.SampleData = b''
@@ -86,11 +104,11 @@ class ITsample(object):
         flags = flags | ((self.IsPingPongSusLoop) << 7)
 
         filename = self.Filename if isinstance(self.Filename, bytes) else self.Filename.encode('ascii', errors='ignore')
-        sample_name = self.SampleName if isinstance(self.SampleName, bytes) else self.SampleName.encode('ascii', errors='ignore')
+        sample_name = self.SampleName if isinstance(self.SampleName, bytes) else self.SampleName.encode('ascii', errors='ignore') # pyright: ignore[reportUnnecessaryIsInstance]
         
-        outf.write(struct.pack('<4s12s', b'IMPS', filename))  # Python 3: b'IMPS'
+        outf.write(struct.pack('<4s12s', b'IMPS', filename))
         outf.write(struct.pack('<BBBB', 0, self.GvL, flags, self.Vol))
-        outf.write(struct.pack('<26s', sample_name[:25] + b'\0'))  # Python 3: b'\0'
+        outf.write(struct.pack('<26s', sample_name[:25] + b'\0'))
         outf.write(struct.pack('<BB', self.Cvt, self.DfP))
         outf.write(struct.pack('<I', self.sampleDataLen()))
         outf.write(struct.pack('<III', self.LoopBegin, self.LoopEnd, self.C5Speed))
@@ -98,13 +116,18 @@ class ITsample(object):
         outf.write(struct.pack('<I', sample_offset))
         outf.write(struct.pack('<BBBB', self.ViS, self.ViD, self.ViT, self.ViR))
 
-    def load(self, inf):
+    def load(self, inf: io.BufferedReader) -> None:
+        """Deserialize a sample from a binary reader.
+
+        Args:
+            inf: Buffered reader containing the serialized sample data.
+        """
         log = logging.getLogger('pyIT.ITsample.load')
         
         (IMPS, self.Filename) = struct.unpack('<4s12s', inf.read(16))
-        assert(IMPS == b'IMPS')  # Python 3: Comparação de bytes b'IMPS'
+        assert(IMPS == b'IMPS')
         
-        (zero, self.GvL, flags, self.Vol) = struct.unpack('<BBBB', inf.read(4))
+        (_, self.GvL, flags, self.Vol) = struct.unpack('<BBBB', inf.read(4))
         
         self.IsSample = bool(flags & 0x01)
         self.Is16bit = bool(flags & 0x02)
@@ -115,7 +138,7 @@ class ITsample(object):
         self.IsPingPongLoop = bool(flags & 0x40)
         self.IsPingPongSusLoop = bool(flags & 0x80)
         
-        self.SampleName = inf.read(26).replace(b'\0', b' ')[:25]  # Python 3: replace em bytes
+        self.SampleName = inf.read(26).replace(b'\0', b' ')[:25]
         
         log.debug("=> Loading sample %s" % (self.SampleName,))
         
@@ -138,7 +161,7 @@ class ITsample(object):
             if self.IsCompressed:
                 log.debug("     compressed!")
                 
-                decompressedbuf = io.BytesIO()  # Python 3: Substituído cStringIO por io.BytesIO
+                decompressedbuf = io.BytesIO()
                 
                 if self.Is16bit:
                     decompressor = pyitcompress.it_decompress16
@@ -162,7 +185,7 @@ class ITsample(object):
                     self._original_sample_data = self.SampleData
                     
                 except:
-                    print()  # Python 3: Print vazio com parênteses
+                    print()
                     traceback.print_exc()
             else:
                 length = length * mult
@@ -172,8 +195,10 @@ class ITsample(object):
                 self.CompressedSampleData = None
                 self._original_sample_data = self.SampleData
             
-    def modified(self):
+    def modified(self) -> bool:
+        """Return whether the sample data differs from the original payload."""
         return (self.SampleData is not self._original_sample_data)
-        
-    def __len__(self):
+
+    def __len__(self) -> int:
+        """Return the serialized size of the sample header in bytes."""
         return 80
