@@ -14,7 +14,7 @@ from .pyIT import (
     TablatureBuilder
 )
 
-from .convert import IT2ogg, SchismRenderer
+from .convert import IT2ogg, SchismRenderer, OggVorbisEncoder, AudioEncoder, ModuleRenderer
 from .instrument import synthesizer, getAsset
 
 __all__ = [
@@ -34,5 +34,8 @@ __all__ = [
     'IT2ogg',
     'SchismRenderer',
     'synthesizer',
-    'getAsset'
+    'getAsset',
+    'OggVorbisEncoder',
+    'AudioEncoder',
+    'ModuleRenderer',
 ]

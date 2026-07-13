@@ -1,3 +1,3 @@
-SNES_EMU ?= ./temp/SNES.AppImage
-PVSNESLIB_HOME ?= ./temp/pvsneslib
-SCHISM_HOME ?= ./temp/schism
+SNES_EMU ?=
+PVSNESLIB_HOME ?=
+SCHISM_HOME ?=

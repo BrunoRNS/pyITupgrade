@@ -2,7 +2,7 @@ ifeq ($(strip $(PVSNESLIB_HOME)),)
 $(error "Please create an environment variable PVSNESLIB_HOME by following this guide: https://github.com/alekmaul/pvsneslib/wiki/Installation")
 endif
 
-AUDIOFILES := test.it
+AUDIOFILES := music.it
 export SOUNDBANK := res/soundbank
 
 include ${PVSNESLIB_HOME}/devkitsnes/snes_rules

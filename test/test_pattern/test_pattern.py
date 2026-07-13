@@ -7,7 +7,7 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from pyIT.pyIT import PatternBuilder
+from pyIT import PatternBuilder
 
 
 def test_note_name_to_number_supports_common_note_names() -> None:

@@ -8,7 +8,7 @@ import pytest
 
 def main() -> int:
     """Run the PatternBuilder regression tests from the command line."""
-    test_file = Path(__file__).resolve().with_name("tests.py")
+    test_file = Path(__file__).resolve().with_name("test_pattern.py")
     return pytest.main([str(test_file), *sys.argv[1:]])
 
 

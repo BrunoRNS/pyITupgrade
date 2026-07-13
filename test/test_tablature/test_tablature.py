@@ -9,7 +9,7 @@ if str(SRC_ROOT) not in sys.path:
 
 import pytest
 
-from pyIT.pyIT import TablatureBuilder
+from pyIT import TablatureBuilder
 
 
 def test_builds_pattern_from_tablature_and_combines_multiple_inputs() -> None:
@@ -17,12 +17,18 @@ def test_builds_pattern_from_tablature_and_combines_multiple_inputs() -> None:
     builder = TablatureBuilder(instrument_id=1, lines_per_note=2)
 
     builder.add_tablature(
-        tablature=[(0, 3), (None, 0)],
+        tablature=[
+            (0, 3),
+            (None, 0)
+        ],
         tuning=["E4", "A4"],
         fret_count=5,
     )
     builder.add_tablature(
-        tablature=[(1, 0), (2, 2)],
+        tablature=[
+            (1, 0),
+            (2, 2)
+        ],
         tuning=["E4", "A4"],
         fret_count=5,
         pre_note_effects={"volume_slide": 4},
@@ -40,8 +46,11 @@ def test_rejects_invalid_tablature_shape() -> None:
     builder = TablatureBuilder()
     with pytest.raises(ValueError):
         builder.add_tablature(
-            tablature=[(0, 3, 1)],
-            tuning=["E4", "A4"],
+            tablature=[
+                (0,    3,   1   ),
+                (None, 1,   None)
+            ],
+            tuning=["E4"],
             fret_count=5,
         )
 
@@ -50,7 +59,10 @@ def test_uses_each_string_tuning_when_converting_frets() -> None:
     """Verify that note conversion uses the tuning of each string rather than a single global pitch."""
     builder = TablatureBuilder(lines_per_note=1)
     builder.add_tablature(
-        tablature=[(0, 3)],
+        tablature=[
+            (0, 3),
+            (0, None)
+        ],
         tuning=["E4", "A4"],
         fret_count=5,
     )
@@ -66,7 +78,12 @@ def test_supports_chords_and_guitar_style_effects() -> None:
     """Allow chord-like structures and bend effects to coexist in the same row."""
     builder = TablatureBuilder(lines_per_note=1)
     builder.add_tablature(
-        tablature=[[(0, 2), {"fret": 3, "bend": 2}]],
+        tablature=[
+            [
+                (0, 2),
+                {"fret": 3, "bend": 2}
+            ]
+        ],
         tuning=["E4", "A4"],
         fret_count=7,
     )
@@ -89,7 +106,7 @@ def test_various_tuning() -> None:
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
-            (1, 2, 3, 4, None, None),
+            (1,    2,    3,    4,    None, None),
         ],
         ["E5", "B5", "G4", "D4", "A3", "E3"],
         22,
@@ -101,7 +118,7 @@ def test_various_tuning() -> None:
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
-            (1, 2, 3, 4, None, None),
+            (1,    2,    3,    4,    None, None),
             (None, None, None, None, None, None),
         ],
         ["E5", "B5", "G4", "D4", "A3", "E3"],
@@ -113,7 +130,7 @@ def test_various_tuning() -> None:
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
-            (1, 2, 3, 4, None, None),
+            (1,    2,    3,    4,    None, None),
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
         ],
@@ -125,7 +142,7 @@ def test_various_tuning() -> None:
         [
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
-            (1, 2, 3, 4, None, None),
+            (1,    2,    3,    4,    None, None),
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
@@ -137,7 +154,7 @@ def test_various_tuning() -> None:
     builder.add_tablature(
         [
             (None, None, None, None, None, None),
-            (1, 2, 3, 4, None, None),
+            (1,    2,    3,    4,    None, None),
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
@@ -149,7 +166,7 @@ def test_various_tuning() -> None:
 
     builder.add_tablature(
         [
-            (1, 2, 3, 4, None, None),
+            (1,    2,    3,    4,    None, None),
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
             (None, None, None, None, None, None),
@@ -230,18 +247,18 @@ def test_definitive_tablature_supports_large_mixed_syntax() -> None:
     builder = TablatureBuilder(instrument_id=5, lines_per_note=1, bpm=160, max_rows=128)
 
     rows: List[Any] = [
-        [None, 0, "1b2", None],
-        [{"fret": 3, "bend": 2}, None, "h2", 2],
-        [{"chord": [(0, 2), (1, 3)]}, "1s2", None, None],
-        [4, None, None, "b2"],
-        [None, {"fret": 5, "slide": 1}, None, None],
-        [3, "b2", None, "1h2"],
-        [None, None, 0, None],
-        [None, 0, "1b2", 1],
-        [0, None, "s2", {"fret": 4, "hammer_on": 2}],
-        ["1b2", {"fret": 2, "bend": 1}, 3, None],
-        [None, None, None, None],
-        [0, 1, 2, 3],
+        [None,                          0,                      "1b2",  None                       ],
+        [{"fret": 3, "bend": 2},        None,                   "h2",   2                          ],
+        [{"chord": [(0, 2), (1, 3)]},   "1s2",                   None,  None                       ],
+        [4,                             None,                    None,  "b2"                       ],
+        [None,                          {"fret": 5, "slide": 1}, None,  None                       ],
+        [3,                             "b2",                    None,  "1h2"                      ],
+        [None,                          None,                    0,     None                       ],
+        [None,                          0,                       "1b2", 1                          ],
+        [0,                             None,                    "s2",  {"fret": 4, "hammer_on": 2}],
+        ["1b2",                         {"fret": 2, "bend": 1},  3,     None                       ],
+        [None,                          None,                    None,  None                       ],
+        [0,                             1,                       2,     3                          ],
     ]
 
     builder.add_tablature(
@@ -254,9 +271,9 @@ def test_definitive_tablature_supports_large_mixed_syntax() -> None:
 
     builder.add_tablature(
         tablature=[
-            ["1b2", None, 2, "s2"],
-            [None, 1, None, {"fret": 4, "bend": 1}],
-            ["h2", 0, None, None],
+            ["1b2", None, 2,    "s2"                  ],
+            [None,  1,    None, {"fret": 4, "bend": 1}],
+            ["h2",  0,    None, None                  ],
         ],
         tuning=["E4", "A4", "D4", "G3"],
         fret_count=12,
@@ -297,7 +314,11 @@ def test_rejects_ambiguous_multi_value_tuple_slots() -> None:
     with pytest.raises(ValueError):
         builder.add_tablature(
             [
-                [(3, 1, 0), "b2", None],
+                [
+                    (3, 1, 0),
+                    "b2", 
+                    None
+                ],
             ],
             ["E4", "A4", "D4"],
             7,

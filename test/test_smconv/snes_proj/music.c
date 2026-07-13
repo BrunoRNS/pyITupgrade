@@ -31,7 +31,7 @@ int main(void)
     spcSetBank(&SOUNDBANK__);
 
     // Load music
-    spcLoad(MOD_ODE_DA_ALEGRIA_WAV);
+    spcLoad(0);
 
     // Init background
     bgSetGfxPtr(0, 0x2000);

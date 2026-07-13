@@ -9,7 +9,7 @@ possibilities: List[str] = [
     "5_pwm_pulse.wav"
 ]
 
-def getAsset(name: str|None = None, id: int|None = None) -> Path|None:
+def getAsset(name: str|None = None, id: int|None = None) -> Path:
     """Get an asset from the WHL package (../../assets), it can be one of the options:
     
     "1_sine.wav",
