@@ -27,7 +27,7 @@ def getAsset(name: str|None = None, id: int|None = None) -> Path:
             idx: int = id-1
             rel_path: str = possibilities[idx]
             
-            return (Path(__file__).parent.parent.parent / "assets" / rel_path).resolve()
+            return (Path(__file__).parent.parent / "assets" / rel_path).resolve()
             
         else:
             raise ValueError("Can't get Asset of ID smaller than 1 or greater than 5")
@@ -41,7 +41,7 @@ def getAsset(name: str|None = None, id: int|None = None) -> Path:
             
         rel_path: str = name
             
-        return (Path(__file__).parent.parent.parent / "assets" / rel_path).resolve()
+        return (Path(__file__).parent.parent / "assets" / rel_path).resolve()
 
     else:
         raise ValueError(

@@ -77,6 +77,12 @@ class SchismRenderer(ModuleRenderer):
         3. Read the WAV, extract PCM data.
         4. Downmix to mono if requested, then return raw PCM bytes.
         """
+        
+        DeprecationWarning(
+            "Sample rate usage in Schism rendering is currently ignored.",
+            "It will be removed in a future release.",
+        )
+        
         with tempfile.NamedTemporaryFile(
             suffix=".wav", delete=False
         ) as tmp_file:
@@ -85,9 +91,7 @@ class SchismRenderer(ModuleRenderer):
         try:
             cmd = [
                 self.schism_exe,
-                "-r",
-                str(sample_rate),
-                "-o",
+                "--diskwrite",
                 temp_wav,
                 str(input_path),
             ]

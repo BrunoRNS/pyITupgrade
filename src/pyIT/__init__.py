@@ -1,3 +1,4 @@
+"""PyIT: a Python library for reading, writing, and manipulating Impulse Tracker (IT) module files."""
 from .pyIT import (
     ITenvelope_node,
     ITenvelope,
@@ -39,3 +40,5 @@ __all__ = [
     'AudioEncoder',
     'ModuleRenderer',
 ]
+
+__version__ = '1.0.0'

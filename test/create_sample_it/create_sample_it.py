@@ -22,8 +22,7 @@ sonic_like_pattern: List[Any] = [
 ]
 
 sonic_like_pattern_2: List[Any] = [
-    "A-4", "G-4", None, "E-4", None, None,
-    None,
+    "A-4", "G-4", None, "E-4", None, None, None
 ]
 
 def create_sample_it(it_path: Path) -> None:
@@ -34,7 +33,11 @@ def create_sample_it(it_path: Path) -> None:
     pbuilder = PatternBuilder(bpm=180, lines_per_note=2)
     
     pattern1 = pbuilder.build_pattern(sonic_like_pattern, instrument_id=1)
-    pattern2 = pbuilder.build_pattern(sonic_like_pattern_2, instrument_id=1)
+    pattern2 = pbuilder.build_pattern(
+        sonic_like_pattern_2,
+        instrument_id=1,
+        stop_line=pbuilder.last_index(sonic_like_pattern_2)
+    )
     
     instrument, sample = WavInstrumentBuilder.create_from_wav(
         str(getAsset(id=2).resolve()), instrument_name="Square"
@@ -49,7 +52,7 @@ def create_sample_it(it_path: Path) -> None:
     music.Patterns.append(pattern1)
     music.Patterns.append(pattern2)
     
-    music.Orders.extend([0, 255])
+    music.Orders.extend([0, 1, 255])
     
     music.write(str(it_path.resolve()))
     

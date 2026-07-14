@@ -73,15 +73,54 @@ class PatternBuilder:
         
         except (KeyError, ValueError):
             return 60
+        
+    def pattern_len(self, note_sequence: Sequence[Optional[str]]) -> int:
+        """Calculate the length of a pattern from a sequence of note names."""
+        
+        return len(note_sequence) * self.lines_per_note
+    
+    def last_index(self, note_sequence: Sequence[Optional[str]]) -> int:
+        """Calculate the last index in a pattern from a sequence of note names."""
+        
+        return self.pattern_len(note_sequence) - self.lines_per_note
 
-    def build_pattern(
-        self, note_sequence: Sequence[Optional[str]], instrument_id: int = 1
-    ) -> ITpattern:
-        """Create an IT pattern from a sequence of note names.
+    def split_long_pattern(self, note_sequence: Sequence[Optional[str]]) -> Sequence[Sequence[Optional[str]]]:
+        """Split a pattern into multiple chunks if it exceeds the 64-line limit."""
+        
+        return [note_sequence[i:i + 64] for i in range(0, len(note_sequence), 64)]
+    
+    def build_long_pattern(self, note_sequence: Sequence[Optional[str]], instrument_id: int = 1) -> Sequence[ITpattern]:
+        """Build multiple IT patterns from a sequence of note names, optionally stopping early with Pattern Break.
 
         Args:
             note_sequence: Iterable of note names. ``None`` values produce empty rows.
             instrument_id: Instrument number assigned to populated note cells.
+
+        Returns:
+            A list of ``ITpattern`` instances with notes placed on channel 0.
+        """
+        
+        slited_pattern = self.split_long_pattern(note_sequence)
+        return [
+            self.build_pattern(pattern, instrument_id) \
+            for pattern in slited_pattern[:-1]] + \
+            [
+                self.build_pattern(
+                    note_sequence=slited_pattern[-1],
+                    instrument_id=instrument_id, 
+                    stop_line=self.last_index(slited_pattern[-1])
+                )
+            ]
+
+    def build_pattern(
+        self, note_sequence: Sequence[Optional[str]], instrument_id: int = 1, stop_line: int|None = None
+    ) -> ITpattern:
+        """Create an IT pattern from a sequence of note names, optionally stopping early with Pattern Break.
+
+        Args:
+            note_sequence: Iterable of note names. ``None`` values produce empty rows.
+            instrument_id: Instrument number assigned to populated note cells.
+            stop_line: Optional line number to insert Pattern Break and stop the pattern early.
 
         Returns:
             An ``ITpattern`` instance with notes placed on channel 0.
@@ -92,6 +131,12 @@ class PatternBuilder:
         for note in note_sequence:
             if current_line >= 64:
                 print("[Warning] The note sequence exceeded the 64-line pattern limit and was truncated.")
+                break
+
+            if stop_line is not None and current_line == stop_line:
+                note_cell = pattern.Rows[current_line][0]
+                note_cell.Effect = 0x02
+                note_cell.EffectArg = 0x00
                 break
 
             if note is not None:

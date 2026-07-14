@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from ..create_sample_it import create_sample_it
+from ..create_sample_it import create_sample_tablature_it
 
 from pathlib import Path
 import subprocess
@@ -27,7 +27,7 @@ def _verify_file_size(file_path: Path) -> Tuple[bool, int]:
         logger.error("File not found to calculate the specified size")
         return False, 0
 
-def test_smconv():
+def test_smconv_tablature():
     """Tests if smconv can convert your IT file, and generates a normalized soundbank.
 
     Raises:
@@ -35,11 +35,11 @@ def test_smconv():
     """
     
     BASE_DIR = Path(__file__).parent / "temp"
-    BASE_DIR.mkdir(parents=True, exist_ok=True) 
+    BASE_DIR.mkdir(parents=True, exist_ok=True)
     sample_it = BASE_DIR / "music.it"
         
     try:
-        create_sample_it(sample_it)
+        create_sample_tablature_it(sample_it)
     except Exception as e:
         e.add_note("Failed to create IT file in test_smconv")
         raise e
@@ -86,7 +86,7 @@ def test_snes_rom():
     sample_it = BASE_DIR / "music.it"
         
     try:
-        create_sample_it(sample_it)
+        create_sample_tablature_it(sample_it)
     except Exception as e:
         e.add_note("Failed to create IT file in test_snes_rom")
         raise e
@@ -106,4 +106,3 @@ def test_snes_rom():
     subprocess.run([Path(os.environ["SNES_EMU"]), rom], cwd=BASE_DIR, check=True)
     
     subprocess.run(["make", "clean"], cwd=BASE_DIR, check=True)
-    

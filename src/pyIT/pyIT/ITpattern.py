@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from .ITnote import ITnote
 
@@ -195,3 +195,40 @@ class ITpattern(object):
         ptndata = inf.read(ptnlen)
         
         self.unpack(rows, ptndata)
+
+    def add_note_to_final(self, 
+                          channel: int, 
+                          note: Optional[int] = None, 
+                          instrument: Optional[int] = None, 
+                          volume: Optional[int] = None, 
+                          effect: Optional[int] = None, 
+                          effect_arg: Optional[int] = None) -> bool:
+        """
+        Add a note to the final row of the pattern.
+        If the pattern is full, return False.
+        """
+        
+        empty_note = ITnote()
+        last_used_row = -1
+        
+        for row_idx in range(len(self.Rows)):
+            if any(cell != empty_note for cell in self.Rows[row_idx]):
+                last_used_row = row_idx
+                
+        target_row = last_used_row + 1
+        
+        if target_row < 0:
+            target_row = 0
+            
+        if target_row >= len(self.Rows):
+            return False
+            
+        target_cell = self.Rows[target_row][channel]
+        target_cell.Note = note
+        target_cell.Instrument = instrument
+        target_cell.Volume = volume
+        target_cell.Effect = effect
+        target_cell.EffectArg = effect_arg
+        
+        return True
+    
