@@ -28,7 +28,7 @@ build_venv: venv
 	. venv/bin/activate
 	pip install -r requirements.txt
 
-build:
+build: build_venv
 	flit build
 
 .PHONY: build_venv build test_venv test all
