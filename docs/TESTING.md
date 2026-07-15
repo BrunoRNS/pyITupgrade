@@ -6,7 +6,7 @@ This document describes how to run the test suite for `pyIT`, including the inte
 
 Before running the tests, ensure the following are installed and properly configured:
 
-1. **Python 3.12+** with `pytest` and `mutagen` (they are included in `test-requirements.txt`).
+1. **Python 3.10+** with `pytest` and `mutagen` (they are included in `test-requirements.txt`).
 2. **Schism Tracker** – required for the OGG conversion tests.
    - Set the environment variable `SCHISM_HOME` to the directory containing the Schism Tracker executable.
    - On macOS, this should point to the `.app` bundle.

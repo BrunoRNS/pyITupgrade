@@ -17,6 +17,7 @@ dependencies = [
     "scipy>=1.18.0",
     "scipy-stubs>=1.18.0.1",
     "pydub>=0.25.1",
+    "audioop-lts; python_version>='3.13'"
 ]
 
 [project.optional-dependencies]

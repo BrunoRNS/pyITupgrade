@@ -56,7 +56,7 @@ pip install pyit
 
 ### Requirements
 
-- Python 3.12+
+- Python 3.10+
 - `numpy`, `scipy` (for synthesizer)
 - `pydub` (for OGG encoding, requires ffmpeg)
 - `mutagen` (for testing OGG validation)

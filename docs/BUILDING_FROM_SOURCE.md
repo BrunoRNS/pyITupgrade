@@ -4,7 +4,7 @@ This guide explains how to build the `pyIT` library from source, including setti
 
 ## Prerequisites
 
-- **Python 3.12 or newer**  
+- **Python 3.10 or newer**  
   Ensure `python` (or `python3`) is available in your PATH.
 - **Git** – to clone the repository.
 - **A working C compiler** (optional) – only needed if any dependencies require compilation (e.g., `numpy`, `scipy`). On most platforms, pre‑built wheels are available.

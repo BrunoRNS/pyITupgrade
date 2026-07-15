@@ -85,7 +85,7 @@ For more detailed usage, see the [full documentation](DOCS.md).
 
 ## Dependencies
 
-- Python 3.12+
+- Python 3.10+
 - `numpy`, `scipy` – for waveform synthesis
 - `pydub` – for OGG encoding (requires `ffmpeg` installed separately)
 - `flit` – for building the package (development only)

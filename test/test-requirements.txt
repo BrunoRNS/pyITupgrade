@@ -5,3 +5,4 @@ flit>=3.12.0,<4
 pydub>=0.25.1
 pytest>=9.1.1
 mutagen>=1.48.1
+audioop-lts; python_version>='3.13'
