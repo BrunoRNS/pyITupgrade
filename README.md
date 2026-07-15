@@ -15,10 +15,10 @@ It provides a complete toolkit to programmatically create, edit, and convert `.i
 
 ## Installation
 
-### From PyPI (once published)
+### From PyPI
 
 ```bash
-pip install pyIT
+pip install pyITupgrade
 ```
 
 ### From Source
