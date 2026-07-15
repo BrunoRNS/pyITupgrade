@@ -113,7 +113,7 @@ We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for
 
 ## Special Thanks
 
-- **Original PyIT** – the initial implementation by mike burke, published as a [GitHub Gist](https://gist.github.com/mikeburke), which served as the foundation for this project.
+- **Original PyIT** – the initial implementation by mike burke, published as a [GitHub Gist](https://gist.github.com/maddievision/5019503), which served as the foundation for this project.
 - **Schism Tracker Community** – for creating and maintaining the excellent Schism Tracker, which powers the audio rendering capabilities of this library.
 - **PVSNESlib Developers** – for the tools that enable IT modules to run on SNES hardware.
 
