@@ -3,7 +3,7 @@ requires = ["flit_core >=3.11,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "pyIT"
+name = "pyITupgrade"
 authors = [
     {name = "BrunoRNS", email = "brunorns05@outlook.com"},
     {name = "mike burke", email = "mrburke@gmail.com"}
@@ -28,7 +28,7 @@ test = [
 ]
 
 [project.urls]
-Home = "https://github.com/BrunoRNS/homebrew-renpylib"
+Home = "https://github.com/BrunoRNS/pyITupgrade"
 
 [tool.flit]
 module = "pyIT"
