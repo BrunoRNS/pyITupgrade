@@ -14,7 +14,12 @@ if str(SRC_ROOT) not in sys.path:
 from pyIT import IT2ogg, SchismRenderer
 from mutagen.oggvorbis import OggVorbis, OggVorbisHeaderError
 
-schism = SchismRenderer(schism_executable=str(Path(os.environ["SCHISM_HOME"]) / "run.sh"))
+schism = SchismRenderer(
+    schism_executable=str(
+        Path(os.environ["SCHISM_HOME"]) / 
+        ("Schism Tracker.app" if sys.platform.lower() == "darwin" else "run.sh" if os.name == "posix" else "schismtracker.exe")
+    )
+)
 
 def _is_ogg_vorbis(file: Path) -> bool:
     """Validate OGG vorbis header using mutagen"""
@@ -58,10 +63,14 @@ def test_convert_it_ogg():
     """
     
     assert str(os.environ["SCHISM_HOME"]).strip() != ""
-    assert (Path(str(os.environ["SCHISM_HOME"])) / "run.sh").is_file()
-    assert (
-        Path(str(os.environ["SCHISM_HOME"])) / "run.sh"
-    ).stat().st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    assert (Path(str(os.environ["SCHISM_HOME"])) / "Schism Tracker.app").is_dir() if sys.platform.lower() == "darwin" else (
+        Path(str(os.environ["SCHISM_HOME"])) / ("run.sh" if os.name == "posix" else "schismtracker.exe")
+    ).is_file()
+    assert True if os.name == "nt" else (
+        Path(str(os.environ["SCHISM_HOME"])) / (
+            "Schism Tracker.app" if sys.platform.lower() == "darwin" else "run.sh"
+        )
+    ).stat().st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH) 
     
     with tempfile.TemporaryDirectory() as tempdir:
         

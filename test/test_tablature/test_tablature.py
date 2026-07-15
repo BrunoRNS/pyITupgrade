@@ -10,6 +10,31 @@ if str(SRC_ROOT) not in sys.path:
 import pytest
 from pyIT import TablatureBuilder, ITpattern
 
+"""
+The lists are zipped in column order.
+
+Like when we have 2 chords only, you must provide lists with 2 elements, and not 2 lists.
+For example
+
+wrong_list = [
+    (None, 0, 1),
+    (None, 0, 1),
+]
+
+If you put 2 tunings, will fail, because you provided lists bigger than 2.
+If you intend to use the lists as tunings, you need to zip them.
+
+right_list = list(zip(wrong_list[0], wrong_list[1]))
+
+now you can do this:
+
+builder.add_tablature(
+    tablature=[right_list], # because the lists are size of 2.
+    tuning=["E4", "A4"],
+    fret_count=5,
+)
+
+"""
 
 def _collect_notes(pattern: ITpattern) -> List[Any]:
     return [cell for row in pattern.Rows for cell in row if cell.Note is not None]

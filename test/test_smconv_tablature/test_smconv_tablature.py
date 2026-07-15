@@ -7,6 +7,7 @@ import subprocess
 import logging
 import shutil
 import stat
+import sys
 import os
 
 def _verify_file_size(file_path: Path) -> Tuple[bool, int]:
@@ -48,7 +49,9 @@ def test_smconv_tablature():
     assert sample_it.is_file()
     assert str(os.environ["PVSNESLIB_HOME"]).strip() != ""
     
-    smconv: Path = Path(os.environ["PVSNESLIB_HOME"]) / "devkitsnes" / "tools" / "smconv"
+    smconv: Path = Path(os.environ["PVSNESLIB_HOME"]) / "devkitsnes" / "tools" / (
+        "smconv" if os.name != "nt" else "smconv.exe"
+    )
     soundbank_path: Path = BASE_DIR / 'res' / 'soundbank'
     
     os.makedirs(BASE_DIR / 'res', exist_ok=True)
@@ -76,8 +79,10 @@ def test_snes_rom():
     assert Path(os.environ["PVSNESLIB_HOME"]).exists()
     assert Path(os.environ["PVSNESLIB_HOME"]).is_dir()
     assert Path(os.environ["SNES_EMU"]).exists()
-    assert Path(os.environ["SNES_EMU"]).is_file()
-    assert (
+    assert Path(os.environ["SNES_EMU"]).is_file() if sys.platform.lower() == 'darwin' else (
+        Path(os.environ["SNES_EMU"]).is_dir()
+    )
+    assert True if os.name == "nt" else (
         Path(str(os.environ["SNES_EMU"]))
     ).stat().st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
     
@@ -103,6 +108,9 @@ def test_snes_rom():
     assert rom.exists()
     assert rom.is_file()
     
-    subprocess.run([Path(os.environ["SNES_EMU"]), rom], cwd=BASE_DIR, check=True)
+    subprocess.run([
+        Path(os.environ["SNES_EMU"]) if sys.platform.lower() != 'darwin' else 
+        "open -a " + str(os.environ["SNES_EMU"]), rom
+    ], cwd=BASE_DIR, check=True, timeout=10)
     
     subprocess.run(["make", "clean"], cwd=BASE_DIR, check=True)

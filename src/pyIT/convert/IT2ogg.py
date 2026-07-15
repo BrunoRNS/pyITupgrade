@@ -64,7 +64,7 @@ class SchismRenderer(ModuleRenderer):
         Args:
             schism_executable: Name or path of the Schism Tracker executable.
         """
-        self.schism_exe = schism_executable
+        self.schism_exe: str = schism_executable
 
     def render(
         self, input_path: Path, sample_rate: int, channels: int
@@ -89,8 +89,15 @@ class SchismRenderer(ModuleRenderer):
             temp_wav = tmp_file.name
 
         try:
+            if (sys.platform == "darwin") and not (Path(self.schism_exe).is_dir()):
+                raise RuntimeError(
+                    "Schism Tracker executable must be an .app directory on macOS."
+                )
+            executable: List[str] = ["open", "-a", self.schism_exe] if sys.platform == "darwin" \
+                else [self.schism_exe]
+            
             cmd = [
-                self.schism_exe,
+                *executable,
                 "--diskwrite",
                 temp_wav,
                 str(input_path),
