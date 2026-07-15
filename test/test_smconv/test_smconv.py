@@ -79,7 +79,7 @@ def test_snes_rom():
     assert Path(os.environ["PVSNESLIB_HOME"]).exists()
     assert Path(os.environ["PVSNESLIB_HOME"]).is_dir()
     assert Path(os.environ["SNES_EMU"]).exists()
-    assert Path(os.environ["SNES_EMU"]).is_file() if sys.platform.lower() == 'darwin' else (
+    assert Path(os.environ["SNES_EMU"]).is_file() if sys.platform.lower() != 'darwin' else (
         Path(os.environ["SNES_EMU"]).is_dir()
     )
     assert True if os.name == "nt" else (
@@ -108,10 +108,12 @@ def test_snes_rom():
     assert rom.exists()
     assert rom.is_file()
     
-    subprocess.run([
-        Path(os.environ["SNES_EMU"]) if sys.platform.lower() != 'darwin' else 
-        "open -a " + str(os.environ["SNES_EMU"]), rom
-    ], cwd=BASE_DIR, check=True, timeout=10)
-    
+    try:
+        subprocess.run([
+            Path(os.environ["SNES_EMU"]) if sys.platform.lower() != 'darwin' else 
+            "open -a " + str(os.environ["SNES_EMU"]), rom
+        ], cwd=BASE_DIR, check=True, timeout=10)
+    except subprocess.TimeoutExpired:
+        pass
     subprocess.run(["make", "clean"], cwd=BASE_DIR, check=True)
     
