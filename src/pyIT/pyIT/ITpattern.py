@@ -46,6 +46,33 @@ class ITpattern(object):
         ptndata = self.pack()
         outf.write(struct.pack('<HH4s', len(ptndata), len(self.Rows), b'\0'*4))
         outf.write(ptndata)
+        
+    @staticmethod
+    def copy_channel(src: 'ITpattern', src_chn: int, dest: 'ITpattern', dest_chn: int) -> None:
+        """Copy all notes from one channel of a source pattern to a destination pattern.
+
+        The source and destination patterns can have different row counts; only the
+        rows that exist in both patterns will be copied. Each note is deep-copied
+        so that subsequent modifications do not affect the other pattern.
+
+        Args:
+            src: source pattern from which to read channel data.
+            src_chn: index of the channel in *src* to copy from (0‑63).
+            dest: destination pattern where channel data is written.
+            dest_chn: index of the channel in *dest* to copy to (0‑63).
+        """
+        
+        rows_to_copy = min(len(src.Rows), len(dest.Rows))
+        for row in range(rows_to_copy):
+            src_note = src.Rows[row][src_chn]
+            
+            new_note = ITnote()
+            new_note.Note = src_note.Note
+            new_note.Instrument = src_note.Instrument
+            new_note.Volume = src_note.Volume
+            new_note.Effect = src_note.Effect
+            new_note.EffectArg = src_note.EffectArg
+            dest.Rows[row][dest_chn] = new_note
     
     def unpack(self, rows: int, ptndata: bytes) -> None:
         """Deserialize pattern data into the current row grid.

@@ -26,8 +26,8 @@ pip install pyITupgrade
 Clone the repository and install in editable mode:
 
 ```bash
-git clone https://github.com/BrunoRNS/homebrew-renpylib.git
-cd homebrew-renpylib
+git clone https://github.com/BrunoRNS/pyITupgrade.git
+cd pyITupgrade
 pip install -e .
 ```
 

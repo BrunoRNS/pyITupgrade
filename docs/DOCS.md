@@ -197,7 +197,7 @@ pattern = tab.build()
 - `pre_note_effects` and `post_note_effects` apply to the row before/after the note.
 - BPM can be overridden per tablature block.
 
-## Instruments & Samples
+## Instruments & Samples Creation
 
 ### Creating from WAV Files
 

@@ -50,4 +50,7 @@ build: check_required_vars build_venv
 	else \
 		VENVBIN=venv/bin; \
 	fi; \
-	$$VENVBIN/flit build
+	$$VENVBIN/pip install -e .
+	$$VENVBIN/pip install build
+	$$VENVBIN/python -m build
+

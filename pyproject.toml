@@ -1,17 +1,17 @@
 [build-system]
-requires = ["flit_core >=3.11,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyITupgrade"
+version = "1.0.1"
+description = "Python library for Impulse Tracker (IT) module files"
 authors = [
     {name = "BrunoRNS", email = "brunorns05@outlook.com"},
     {name = "mike burke", email = "mrburke@gmail.com"}
 ]
 readme = "README.md"
-license = "GPL-3.0-or-later"
-license-files = ["LICENSE"]
-dynamic = ["version", "description"]
+license = {text = "GPL-3.0-or-later"}
 requires-python = ">=3.10"
 dependencies = [
     "numpy>=2.2.6",
@@ -30,5 +30,6 @@ test = [
 [project.urls]
 Home = "https://github.com/BrunoRNS/pyITupgrade"
 
-[tool.flit]
-module = "pyIT"
+[tool.setuptools]
+packages = ["pyIT"]
+package-dir = {"" = "src"}
