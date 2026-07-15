@@ -8,8 +8,8 @@ all: build
 
 check_required_vars:
 	@test -n "$(PVSNESLIB_HOME)" || { echo "ERROR: Please create an environment variable PVSNESLIB_HOME by following this guide: https://github.com/alekmaul/pvsneslib/wiki/Installation"; exit 1; }
-	@test -n "$(SCHISM_HOME)" || { echo "ERROR: Please create an environment variable SCHISM_HOME by following this guide: :/ sorry, no guide yet"; exit 1; }
-	@test -n "$(SNES_EMU)" || { echo "ERROR: Please create an environment variable SNES_EMU by following this guide: :/ sorry, no guide yet"; exit 1; }
+	@test -n "$(SCHISM_HOME)" || { echo "ERROR: Please create an environment variable SCHISM_HOME by following this guide: https://github.com/BrunoRNS/pyITupgrade/blob/main/docs/SCHISM_HOME.md"; exit 1; }
+	@test -n "$(SNES_EMU)" || { echo "ERROR: Please create an environment variable SNES_EMU by following this guide: https://github.com/BrunoRNS/pyITupgrade/blob/main/docs/SNES_EMU.md"; exit 1; }
 
 venv:
 	@if [ "$${OS:-}" = "Windows_NT" ]; then \
