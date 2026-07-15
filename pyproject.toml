@@ -14,8 +14,8 @@ license-files = ["LICENSE"]
 dynamic = ["version", "description"]
 dependencies = [
     "numpy>=2.2.6",
-    "scipy>=1.18.0",
-    "scipy-stubs>=1.18.0.1",
+    "scipy>=1.15.3",
+    "scipy-stubs>=1.15.3.0",
     "pydub>=0.25.1",
     "audioop-lts; python_version>='3.13'"
 ]
