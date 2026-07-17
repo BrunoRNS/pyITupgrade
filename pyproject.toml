@@ -30,6 +30,5 @@ test = [
 [project.urls]
 Home = "https://github.com/BrunoRNS/pyITupgrade"
 
-[tool.setuptools]
-packages = ["pyIT"]
-package-dir = {"" = "src"}
+[tool.setuptools.packages.find]
+where = ["src"]
