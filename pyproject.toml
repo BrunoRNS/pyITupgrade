@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyITupgrade"
-version = "1.0.1"
+version = "1.0.2"
 description = "Python library for Impulse Tracker (IT) module files"
 authors = [
     {name = "BrunoRNS", email = "brunorns05@outlook.com"},
@@ -32,3 +32,6 @@ Home = "https://github.com/BrunoRNS/pyITupgrade"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
